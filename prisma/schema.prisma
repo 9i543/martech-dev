@@ -1,0 +1,80 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── 行銷規劃主表 ───────────────────────────────────────
+model PlanMaster {
+  id            String    @id @default(uuid())
+  userId        String
+  planName      String
+  brandName     String?
+  startDate     DateTime?
+  endDate       DateTime?
+  totalBudget   Float?
+  objectiveType String?   // brand_awareness / lead_gen / ecommerce / membership / content / other
+  notes         String?
+  owner         String?
+  status        String    @default("draft") // draft / active / completed / archived
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  rows PlanRow[]
+}
+
+// ─── 行銷規劃明細表（每列 = 一個 UTM 執行單元）──────────
+model PlanRow {
+  id                  String   @id @default(uuid())
+  planId              String
+  plan                PlanMaster @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  // 漏斗階段
+  funnelStage         String?  // Awareness / Interest / Desire / Action / Membership
+  executionStage      String?  // aware / desire / action
+
+  // 渠道
+  channelBucket       String?  // paid / owned / influence
+  channelType         String?  // paid_social / cpc / display / paid_video / social / email / sms / push / referral / kol
+  channelRole         String?  // primary / support / test
+
+  // UTM 欄位
+  utmSource           String?
+  utmMedium           String?
+  utmSourcePlatform   String?
+  campaignPlacement   String?
+  utmMarketingTactic  String?
+  utmTerm             String?
+  contentGroup        String?
+  contentVariant      String?
+  utmCreativeFormat   String?
+  campaignGoal        String?
+
+  // 受眾
+  audienceType        String?  // keyword / interest / lookalike / remarketing / crm
+  audienceDesc        String?
+  isNewCustomer       String?  // new / existing / member / prospect
+
+  // 預算與 KPI
+  plannedBudget       Float?
+  budgetRatio         Float?
+  plannedKpiType      String?
+  plannedKpiValue     Float?
+  plannedKpiCost      Float?
+
+  // 落地頁與 CTA
+  landingUrl          String?
+  ctaType             String?
+  conversionPoint     String?
+
+  // 串接 UTMLink
+  trackingId          String?  // 對應 UTMLink.trackingId，產生 UTM 後回寫
+
+  notes               String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
