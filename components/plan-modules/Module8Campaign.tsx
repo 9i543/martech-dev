@@ -89,7 +89,7 @@ export default function Module8Campaign({ plan, update }: Props) {
     })
   }
 
-  const zhLen = [...(plan.mycampaignNameZh || '')].length
+  const zhLen = Array.from(plan.mycampaignNameZh || '').length
   const zhError = zhLen > 8
 
   return (
