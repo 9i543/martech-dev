@@ -195,68 +195,102 @@ function VennDiagram() {
 }
 
 // ── ROI Funnel Flow ───────────────────────────────────────────────────────────
+// 流程：興趣廣告活動[導流量] →2.5天→ 慾望廣告活動[加入購物車] →1.2天→ 行動廣告活動 → 交易量(完成購買)
+// 整體平均從興趣到完成購買：5.1天
+
+function StageBox({ stage, stageEn, axis, axisLabel, color }: {
+  stage: string; stageEn: string; axis: string; axisLabel: string
+  color: { bg: string; border: string; text: string; tag: string }
+}) {
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <div className={`${color.bg} ${color.border} border rounded-xl px-3 py-2 text-center min-w-[80px]`}>
+        <div className={`text-[10px] font-medium ${color.tag} mb-0.5`}>{stageEn}</div>
+        <div className={`text-xs font-bold ${color.text}`}>{stage}</div>
+        <div className={`text-xs font-semibold ${color.text}`}>廣告活動</div>
+      </div>
+      <div className="flex flex-col items-center">
+        <div className={`text-[9px] text-gray-400`}>{axisLabel}</div>
+        <div className={`text-[10px] font-semibold ${color.text} bg-white border ${color.border} rounded-full px-2 py-0.5`}>{axis}</div>
+      </div>
+    </div>
+  )
+}
+
+function Arrow({ days, label }: { days: string; label: string }) {
+  return (
+    <div className="flex flex-col items-center gap-0.5 shrink-0">
+      <div className="text-[9px] text-gray-400 whitespace-nowrap">{label}</div>
+      <div className="flex items-center gap-1">
+        <div className="w-6 h-px bg-gray-300" />
+        <div className="bg-amber-100 border border-amber-300 text-amber-700 text-[10px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap">{days}</div>
+        <div className="w-2 h-px bg-gray-300" />
+        <span className="text-gray-400 text-sm -ml-1">→</span>
+      </div>
+    </div>
+  )
+}
 
 function ROIFlow() {
   return (
-    <div className="bg-yellow-50 border border-yellow-200 rounded-xl px-5 py-3 flex-1">
-      <div className="text-xs font-bold text-yellow-700 mb-3">投資報酬最佳組合</div>
-      <div className="flex items-center gap-1 flex-wrap">
-        {/* 興趣廣告活動 */}
-        <div className="flex flex-col items-center">
-          <div className="text-[10px] text-gray-400 mb-0.5">平均需要時間（排除極端值）</div>
-          <div className="bg-cyan-100 border border-cyan-300 text-cyan-800 rounded-lg px-3 py-1.5 text-xs font-semibold text-center">
-            <div>興趣</div>
-            <div>廣告活動</div>
+    <div className="bg-yellow-50 border border-yellow-200 rounded-xl px-5 py-4 flex-1">
+      {/* Header */}
+      <div className="text-xs font-bold text-red-500 mb-3">投資報酬最佳組合</div>
+
+      {/* Main flow row */}
+      <div className="flex items-start gap-2">
+        {/* 興趣 */}
+        <StageBox
+          stage="興趣" stageEn="Interest"
+          axis="導流量" axisLabel="行銷主軸"
+          color={{ bg: 'bg-cyan-50', border: 'border-cyan-300', text: 'text-cyan-800', tag: 'text-cyan-500' }}
+        />
+
+        {/* → 2.5 days → */}
+        <Arrow days="2.5 days" label="平均需要時間（排除極端值）" />
+
+        {/* 慾望 */}
+        <StageBox
+          stage="慾望" stageEn="Desire"
+          axis="加入購物車" axisLabel="轉換目標"
+          color={{ bg: 'bg-purple-50', border: 'border-purple-300', text: 'text-purple-800', tag: 'text-purple-500' }}
+        />
+
+        {/* → 1.2 days → */}
+        <Arrow days="1.2 days" label="平均需要時間（排除極端值）" />
+
+        {/* 行動 */}
+        <StageBox
+          stage="行動" stageEn="Action"
+          axis="完成購買" axisLabel="轉換目標"
+          color={{ bg: 'bg-green-50', border: 'border-green-300', text: 'text-green-800', tag: 'text-green-500' }}
+        />
+
+        {/* → 交易量 */}
+        <div className="flex flex-col items-center gap-1 shrink-0">
+          <div className="text-[9px] text-transparent">-</div>
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-px bg-gray-300" />
+            <span className="text-gray-400 text-sm">→</span>
           </div>
         </div>
-        <div className="flex flex-col items-center px-1">
-          <div className="bg-yellow-100 border border-yellow-300 text-yellow-800 text-[10px] px-2 py-1 rounded font-semibold whitespace-nowrap">2.5 days</div>
-          <div className="text-gray-400 text-xs mt-0.5">→</div>
-        </div>
-        <div className="flex flex-col items-center">
-          <div className="text-[10px] text-transparent mb-0.5">.</div>
-          <div className="bg-gray-100 border border-gray-200 text-gray-600 rounded-lg px-3 py-1.5 text-xs font-medium text-center">
-            <div>慾望</div>
-            <div>導流量</div>
+        <div className="flex flex-col items-center gap-1 shrink-0">
+          <div className="text-[9px] text-transparent">-</div>
+          <div className="bg-orange-100 border border-orange-300 rounded-xl px-3 py-2 text-center">
+            <div className="text-[10px] font-medium text-orange-500">Result</div>
+            <div className="text-xs font-bold text-orange-800">交易量</div>
+            <div className="text-xs font-semibold text-orange-700">完成購買</div>
           </div>
         </div>
-        <div className="text-gray-300 text-xs px-0.5">→</div>
-        <div className="flex flex-col items-center">
-          <div className="text-[10px] text-gray-400 mb-0.5">平均需要時間（排除極端值）</div>
-          <div className="bg-purple-100 border border-purple-300 text-purple-800 rounded-lg px-3 py-1.5 text-xs font-semibold text-center">
-            <div>慾望</div>
-            <div>廣告活動</div>
-          </div>
+      </div>
+
+      {/* Bottom: overall average */}
+      <div className="mt-3 border-t border-yellow-200 pt-2 flex items-center gap-2">
+        <div className="flex-1 h-px bg-yellow-300" />
+        <div className="text-[10px] text-yellow-700 whitespace-nowrap">
+          整體平均（排除極端值）：<span className="font-bold text-amber-600">5.1 days</span>（興趣 → 完成購買）
         </div>
-        <div className="flex flex-col items-center px-1">
-          <div className="bg-yellow-100 border border-yellow-300 text-yellow-800 text-[10px] px-2 py-1 rounded font-semibold whitespace-nowrap">5.1 days</div>
-          <div className="text-gray-400 text-xs mt-0.5">→</div>
-        </div>
-        <div className="flex flex-col items-center">
-          <div className="text-[10px] text-transparent mb-0.5">.</div>
-          <div className="bg-gray-100 border border-gray-200 text-gray-600 rounded-lg px-3 py-1.5 text-xs font-medium text-center">
-            <div>行動</div>
-            <div>目標量</div>
-          </div>
-        </div>
-        <div className="text-gray-300 text-xs px-0.5">→</div>
-        <div className="flex flex-col items-center">
-          <div className="text-[10px] text-gray-400 mb-0.5">平均需要時間（排除極端值）</div>
-          <div className="bg-green-100 border border-green-300 text-green-800 rounded-lg px-3 py-1.5 text-xs font-semibold text-center">
-            <div>行動</div>
-            <div>廣告活動</div>
-          </div>
-        </div>
-        <div className="flex flex-col items-center px-1">
-          <div className="bg-yellow-100 border border-yellow-300 text-yellow-800 text-[10px] px-2 py-1 rounded font-semibold whitespace-nowrap">1.2 days</div>
-          <div className="text-gray-400 text-xs mt-0.5">→</div>
-        </div>
-        <div className="flex flex-col items-center">
-          <div className="text-[10px] text-transparent mb-0.5">.</div>
-          <div className="bg-orange-100 border border-orange-300 text-orange-800 rounded-lg px-3 py-1.5 text-xs font-semibold text-center">
-            <div>交易量</div>
-          </div>
-        </div>
+        <div className="flex-1 h-px bg-yellow-300" />
       </div>
     </div>
   )
