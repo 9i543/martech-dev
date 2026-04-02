@@ -292,7 +292,8 @@ function MediaInfluence() {
 
 // ── Main Dashboard ────────────────────────────────────────────────────────────
 
-export default function DashboardPage({ email: _email }: { email: string }) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export default function DashboardPage({ email }: { email: string }) {
   const [period, setPeriod] = useState(PERIODS[0])
 
   return (
