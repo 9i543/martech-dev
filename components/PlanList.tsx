@@ -1,5 +1,5 @@
 'use client'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -116,28 +116,49 @@ interface Plan {
   _count: { rows: number }
 }
 
-// ── Default sort: completed first (newest), then others (newest) ───────────
+// ── Default sort: drafts first (newest), then completed (newest), then others ─
 function defaultSort(plans: Plan[]): Plan[] {
-  const completed = plans.filter(p => p.status === 'completed').sort(
-    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-  )
-  const others = plans.filter(p => p.status !== 'completed').sort(
-    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-  )
-  return [...completed, ...others]
+  const byUpdatedDesc = (a: Plan, b: Plan) =>
+    new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+  const drafts    = plans.filter(p => p.status === 'draft').sort(byUpdatedDesc)
+  const completed = plans.filter(p => p.status === 'completed').sort(byUpdatedDesc)
+  const others    = plans.filter(p => p.status !== 'draft' && p.status !== 'completed').sort(byUpdatedDesc)
+  return [...drafts, ...completed, ...others]
 }
 
-export default function PlanList({ plans }: { plans: Plan[] }) {
+export default function PlanList({ plans, userId }: { plans: Plan[]; userId: string }) {
   const router = useRouter()
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [confirmId, setConfirmId] = useState<string | null>(null)
-  // Custom order: array of plan IDs; initialised from default sort
+  const storageKey = `planOrder_${userId}`
+
+  // Initialise from defaultSort; localStorage is applied on mount via useEffect
   const [order, setOrder] = useState<string[]>(() => defaultSort(plans).map(p => p.id))
+
+  // Load persisted order from localStorage after mount (avoids SSR mismatch)
+  useEffect(() => {
+    const saved = localStorage.getItem(storageKey)
+    if (!saved) return
+    try {
+      const parsed = JSON.parse(saved) as string[]
+      const currentIds = new Set(plans.map(p => p.id))
+      const validIds = parsed.filter(id => currentIds.has(id))
+      if (validIds.length === 0) return
+      // Append any new plans not yet in saved order at the end
+      const newIds = plans.filter(p => !parsed.includes(p.id)).map(p => p.id)
+      setOrder([...validIds, ...newIds])
+    } catch { /* ignore corrupt data */ }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storageKey])
+
+  // Persist order to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem(storageKey, JSON.stringify(order))
+  }, [order, storageKey])
 
   // Rebuild sorted list whenever `plans` or `order` changes
   const sortedPlans = useMemo(() => {
     const map = new Map(plans.map(p => [p.id, p]))
-    // Include any new plans that aren't in custom order yet
     const ordered = order.map(id => map.get(id)).filter(Boolean) as Plan[]
     const extra = plans.filter(p => !order.includes(p.id))
     return [...ordered, ...extra]
@@ -200,30 +221,14 @@ export default function PlanList({ plans }: { plans: Plan[] }) {
       {sortedPlans.map((plan, idx) => {
         const slices = parseFunnelSlices(plan.funnelConfigJson, plan.totalBudget)
         return (
-          <div key={plan.id} className="relative group flex items-stretch gap-1">
-            {/* ── Reorder arrows ── */}
-            <div className="flex flex-col justify-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button
-                onClick={(e) => moveUp(idx, e)}
-                disabled={idx === 0}
-                className="w-6 h-6 flex items-center justify-center rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 disabled:opacity-20 disabled:cursor-default transition"
-                title="往上移"
-              >▲</button>
-              <button
-                onClick={(e) => moveDown(idx, e)}
-                disabled={idx === sortedPlans.length - 1}
-                className="w-6 h-6 flex items-center justify-center rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 disabled:opacity-20 disabled:cursor-default transition"
-                title="往下移"
-              >▼</button>
-            </div>
-
-            {/* ── Plan card ── */}
+          <div key={plan.id} className="relative group">
+            {/* ── Plan card (full width, arrows inside on the right) ── */}
             <Link
               href={`/plans/${plan.id}`}
-              className="flex-1 block bg-white rounded-xl border hover:shadow-md transition-shadow p-5"
+              className="block bg-white rounded-xl border hover:shadow-md transition-shadow p-5"
             >
-              <div className="flex items-start justify-between gap-4">
-                {/* Left: name + meta */}
+              <div className="flex items-stretch gap-3">
+                {/* Left: name + meta + funnel bar */}
                 <div className="flex-1 min-w-0">
                   <div className="font-bold text-gray-800">{plan.planName}</div>
                   <div className="text-sm text-gray-500 mt-0.5 flex items-center gap-2 flex-wrap">
@@ -250,7 +255,7 @@ export default function PlanList({ plans }: { plans: Plan[] }) {
                   <MiniFunnelBar slices={slices} totalBudget={plan.totalBudget} />
                 </div>
 
-                {/* Right: budget / rows / status */}
+                {/* Right: budget / rows / status / delete */}
                 <div className="flex flex-col items-end gap-1 shrink-0">
                   {plan.totalBudget && (
                     <div className="text-sm text-gray-700 font-semibold">
@@ -297,6 +302,22 @@ export default function PlanList({ plans }: { plans: Plan[] }) {
                       </svg>
                     </button>
                   )}
+                </div>
+
+                {/* ── Reorder arrows (inside card, far right) ── */}
+                <div className="flex flex-col justify-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity border-l border-gray-100 pl-2">
+                  <button
+                    onClick={(e) => moveUp(idx, e)}
+                    disabled={idx === 0}
+                    className="w-6 h-6 flex items-center justify-center rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 disabled:opacity-20 disabled:cursor-default transition text-xs"
+                    title="往上移"
+                  >▲</button>
+                  <button
+                    onClick={(e) => moveDown(idx, e)}
+                    disabled={idx === sortedPlans.length - 1}
+                    className="w-6 h-6 flex items-center justify-center rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 disabled:opacity-20 disabled:cursor-default transition text-xs"
+                    title="往下移"
+                  >▼</button>
                 </div>
               </div>
             </Link>

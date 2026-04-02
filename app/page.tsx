@@ -59,7 +59,7 @@ export default async function Home() {
           <h1 className="text-xl font-bold text-gray-800">行銷計畫列表</h1>
         </div>
 
-        <PlanList plans={planData} />
+        <PlanList plans={planData} userId={userId} />
       </main>
     </div>
   )
