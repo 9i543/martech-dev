@@ -39,15 +39,6 @@ const PIE_DATA = [
   { label: 'Other',          value:  3, color: '#94a3b8' },
 ]
 
-const ROI_FLOW = [
-  { stage: '興趣', type: '廣告活動', color: 'bg-cyan-100 text-cyan-800 border-cyan-300', days: null },
-  { stage: null,   type: '導流量',   color: '', days: 2.5 },
-  { stage: '慾望', type: '廣告活動', color: 'bg-purple-100 text-purple-800 border-purple-300', days: null },
-  { stage: null,   type: '目標量',   color: '', days: 5.1 },
-  { stage: '行動', type: '廣告活動', color: 'bg-green-100 text-green-800 border-green-300', days: null },
-  { stage: null,   type: '交易量',   color: '', days: 1.2 },
-]
-
 const MEDIA_INFLUENCE = [
   { stage: '興趣', label: 'KOL 網紅合作_Q4',    stageColor: 'bg-cyan-100 text-cyan-700' },
   { stage: '行動', label: 'PMAX 效果最大化_Q4', stageColor: 'bg-green-100 text-green-700' },
@@ -301,7 +292,7 @@ function MediaInfluence() {
 
 // ── Main Dashboard ────────────────────────────────────────────────────────────
 
-export default function DashboardPage({ email }: { email: string }) {
+export default function DashboardPage({ email: _email }: { email: string }) {
   const [period, setPeriod] = useState(PERIODS[0])
 
   return (

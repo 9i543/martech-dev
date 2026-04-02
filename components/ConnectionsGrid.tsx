@@ -158,7 +158,7 @@ const PLATFORMS = [
 
 // ── Connection Card ───────────────────────────────────────────────────────────
 
-function PlatformCard({ id, name, Icon, category }: typeof PLATFORMS[0]) {
+function PlatformCard({ name, Icon, category }: Omit<typeof PLATFORMS[0], 'id'>) {
   const [status, setStatus] = useState<'idle' | 'connecting' | 'connected'>('idle')
 
   const handleClick = () => {
