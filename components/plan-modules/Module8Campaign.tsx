@@ -19,6 +19,7 @@ function generateCampaign(ch: ChannelRow, plan: PlanData): string {
   const stage = sanitize(ch.funnelStage)
   const source = sanitize(ch.utmSource)
   const tactic = sanitize(plan.tacticIntent)
+  const friendlyName = sanitize(plan.mycampaignNameEn)
   const creative = plan.creativeRows.find((c) => c.channelRowId === ch.id)
   const content = creative
     ? sanitize(`${creative.contentGroup}_${creative.contentVariant}`)
@@ -27,18 +28,19 @@ function generateCampaign(ch: ChannelRow, plan: PlanData): string {
   const goal = sanitize(kpi?.campaignGoal || '')
   const start = formatDate(plan.startDate)
   const end = formatDate(plan.endDate)
-  return [stage, source, tactic, content, goal, start, end].join('__')
+  return [stage, source, tactic, friendlyName, content, goal, start, end].join('__')
 }
 
-const SEGMENT_LABELS = ['階段', '來源', '策略', '內容', '目標', '起始', '結束']
+const SEGMENT_LABELS = ['階段', '來源', '策略', '友善名稱', '內容', '目標', '起始', '結束']
 const SEGMENT_COLORS = [
   'bg-blue-100 text-blue-800',
   'bg-indigo-100 text-indigo-800',
   'bg-purple-100 text-purple-800',
+  'bg-pink-100 text-pink-800',
   'bg-teal-100 text-teal-800',
   'bg-orange-100 text-orange-800',
   'bg-green-100 text-green-800',
-  'bg-pink-100 text-pink-800',
+  'bg-rose-100 text-rose-800',
 ]
 
 const STAGE_COLOR: Record<string, string> = {
@@ -47,6 +49,11 @@ const STAGE_COLOR: Record<string, string> = {
   Desire:     'bg-purple-50 border-purple-200 text-purple-700',
   Action:     'bg-green-50 border-green-200 text-green-700',
   Membership: 'bg-orange-50 border-orange-200 text-orange-700',
+}
+
+// Validate English friendly name: lowercase, no spaces, no __, only a-z0-9_
+function sanitizeEnInput(s: string): string {
+  return s.toLowerCase().replace(/\s+/g, '_').replace(/__+/g, '_').replace(/[^a-z0-9_]/g, '')
 }
 
 export default function Module8Campaign({ plan, update }: Props) {
@@ -82,6 +89,9 @@ export default function Module8Campaign({ plan, update }: Props) {
     })
   }
 
+  const zhLen = [...(plan.mycampaignNameZh || '')].length
+  const zhError = zhLen > 8
+
   return (
     <div className="bg-white rounded-xl shadow-sm p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -100,7 +110,52 @@ export default function Module8Campaign({ plan, update }: Props) {
       </div>
 
       <div className="bg-blue-50 rounded-xl px-4 py-2 text-xs text-blue-700">
-        💡 utm_campaign 格式：<span className="font-mono">[階段]__[來源]__[策略]__[內容]__[目標]__[起始]__[結束]</span>，以雙底線連接，各段內部使用單底線。
+        💡 utm_campaign 格式：<span className="font-mono">[階段]__[來源]__[策略]__[友善辨識名稱]__[內容]__[目標]__[起始]__[結束]</span>，以雙底線連接，各段內部使用單底線。
+      </div>
+
+      {/* ── 友善辨識名稱 ── */}
+      <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-3">
+        <div className="text-sm font-semibold text-gray-700">廣告活動友善辨識名稱</div>
+        <div className="grid grid-cols-2 gap-4">
+          {/* 中文 */}
+          <div>
+            <label className="text-xs text-gray-500 mb-1 block">
+              中文名稱 <span className="text-gray-400">（僅供頁面呈現，上限 8 字）</span>
+            </label>
+            <input
+              type="text"
+              className={`w-full text-sm border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white ${zhError ? 'border-red-400 ring-1 ring-red-400' : ''}`}
+              placeholder="例：會員招募活動"
+              value={plan.mycampaignNameZh || ''}
+              onChange={(e) => {
+                const val = e.target.value
+                // allow typing but show error if over 8
+                update({ mycampaignNameZh: val })
+              }}
+            />
+            <div className={`text-xs mt-1 flex justify-between ${zhError ? 'text-red-500' : 'text-gray-400'}`}>
+              <span>{zhError ? '超過 8 個中文字限制' : ''}</span>
+              <span>{zhLen} / 8</span>
+            </div>
+          </div>
+
+          {/* 英文 */}
+          <div>
+            <label className="text-xs text-gray-500 mb-1 block">
+              英文識別碼 <span className="text-gray-400">（mycampaign_name，用於 utm_campaign）</span>
+            </label>
+            <input
+              type="text"
+              className="w-full font-mono text-sm border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              placeholder="例：member_recruitment"
+              value={plan.mycampaignNameEn || ''}
+              onChange={(e) => {
+                update({ mycampaignNameEn: sanitizeEnInput(e.target.value) })
+              }}
+            />
+            <div className="text-xs text-gray-400 mt-1">小寫英文、數字，以 _ 連接，不可包含 __</div>
+          </div>
+        </div>
       </div>
 
       {/* Segment legend */}

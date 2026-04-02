@@ -50,13 +50,17 @@ export default async function PlanDetailPage({ params }: { params: { id: string 
   let funnelConfig = DEFAULT_FUNNEL_CONFIG
   let tacticIntent = ''
   let tacticAngle  = ''
+  let mycampaignNameZh = ''
+  let mycampaignNameEn = ''
   if (plan.funnelConfigJson) {
     try {
       const parsed = JSON.parse(plan.funnelConfigJson as string)
-      tacticIntent = (parsed._tacticIntent as string) ?? ''
-      tacticAngle  = (parsed._tacticAngle  as string) ?? ''
-      const { _tacticIntent: _ti, _tacticAngle: _ta, ...funnelOnly } = parsed
-      void _ti; void _ta
+      tacticIntent       = (parsed._tacticIntent     as string) ?? ''
+      tacticAngle        = (parsed._tacticAngle      as string) ?? ''
+      mycampaignNameZh   = (parsed._mycampaignNameZh as string) ?? ''
+      mycampaignNameEn   = (parsed._mycampaignNameEn as string) ?? ''
+      const { _tacticIntent: _ti, _tacticAngle: _ta, _mycampaignNameZh: _mzh, _mycampaignNameEn: _men, ...funnelOnly } = parsed
+      void _ti; void _ta; void _mzh; void _men
       if (Object.keys(funnelOnly).length > 0) funnelConfig = funnelOnly
     } catch {}
   } else if (plan.objectiveType) {
@@ -145,6 +149,8 @@ export default async function PlanDetailPage({ params }: { params: { id: string 
     notes: (plan.notes as string) ?? '',
     tacticIntent,
     tacticAngle,
+    mycampaignNameZh,
+    mycampaignNameEn,
     funnelConfig,
     channelRows,
     audienceRows,

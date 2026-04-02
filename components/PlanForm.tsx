@@ -43,6 +43,9 @@ export type PlanData = {
   // Module 2 (行銷策略)
   tacticIntent: string
   tacticAngle: string
+  // Module 8 (廣告活動 - 友善辨識名稱)
+  mycampaignNameZh: string
+  mycampaignNameEn: string
   // Module 3 (AIDA+M 漏斗配置)
   funnelConfig: Record<string, FunnelStageConfig>
   // Module 3 - rows
@@ -137,6 +140,8 @@ const emptyPlan: PlanData = {
   notes: '',
   tacticIntent: '',
   tacticAngle: '',
+  mycampaignNameZh: '',
+  mycampaignNameEn: '',
   funnelConfig: defaultFunnelConfig,
   channelRows: [],
   audienceRows: [],
@@ -266,8 +271,10 @@ export default function PlanForm({ initialData, planId }: Props) {
         objectiveType: planData.objectiveType,
         notes: planData.notes,
         funnelConfigJson: JSON.stringify({
-          ...(planData.tacticIntent ? { _tacticIntent: planData.tacticIntent } : {}),
-          ...(planData.tacticAngle  ? { _tacticAngle:  planData.tacticAngle  } : {}),
+          ...(planData.tacticIntent       ? { _tacticIntent:       planData.tacticIntent       } : {}),
+          ...(planData.tacticAngle        ? { _tacticAngle:        planData.tacticAngle        } : {}),
+          ...(planData.mycampaignNameZh   ? { _mycampaignNameZh:   planData.mycampaignNameZh   } : {}),
+          ...(planData.mycampaignNameEn   ? { _mycampaignNameEn:   planData.mycampaignNameEn   } : {}),
           ...planData.funnelConfig,
         }),
       }
