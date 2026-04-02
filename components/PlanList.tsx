@@ -144,9 +144,11 @@ export default function PlanList({ plans, userId }: { plans: Plan[]; userId: str
       const currentIds = new Set(plans.map(p => p.id))
       const validIds = parsed.filter(id => currentIds.has(id))
       if (validIds.length === 0) return
-      // Append any new plans not yet in saved order at the end
-      const newIds = plans.filter(p => !parsed.includes(p.id)).map(p => p.id)
-      setOrder([...validIds, ...newIds])
+      // New plans not yet in saved order: drafts go to top, others to bottom
+      const newPlans = defaultSort(plans.filter(p => !parsed.includes(p.id)))
+      const newDraftIds = newPlans.filter(p => p.status === 'draft').map(p => p.id)
+      const newOtherIds = newPlans.filter(p => p.status !== 'draft').map(p => p.id)
+      setOrder([...newDraftIds, ...validIds, ...newOtherIds])
     } catch { /* ignore corrupt data */ }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storageKey])

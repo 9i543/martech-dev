@@ -29,22 +29,22 @@ const GOAL_CTA_SUGGESTION: Record<string, string> = {
   view_video:       '非點擊類型',
   view_item:        '非點擊類型',
   select_item:      '非點擊類型',
-  click_cta:        '了解更多',
+  click_cta:        '點擊按鈕',
   add_to_wishlist:  '非點擊類型',
   add_to_cart:      '非點擊類型',
   view_cart:        '非點擊類型',
   form_start:       '非點擊類型',
-  sign_up:          '立即報名',
-  generate_lead:    '立即報名',
-  contact:          '聯絡我們',
-  appointment:      '立即預約',
+  sign_up:          '會員註冊',
+  generate_lead:    '填寫表單',
+  contact:          '聯絡詢問',
+  appointment:      '預約',
   download:         '非點擊類型',
-  begin_checkout:   '立即購買',
-  add_payment_info: '立即購買',
-  purchase:         '立即購買',
-  trial:            '免費試用',
-  phone_call:       '聯絡我們',
-  share:            '了解更多',
+  begin_checkout:   '開始結帳',
+  add_payment_info: '開始付款',
+  purchase:         '完成購買',
+  trial:            '試用申請',
+  phone_call:       '撥打電話',
+  share:            '分享內容',
 }
 
 
@@ -60,8 +60,10 @@ const GOAL_LABELS: Record<string, string> = {
 
 const CTA_TYPES = [
   '非點擊類型',
-  '了解更多', '立即購買', '立即報名', '免費試用',
-  '加入會員', '聯絡我們', '下載', '訂閱', '立即預約', '取得報價',
+  '頁面瀏覽', '捲動 90%', '影片觀看', '查看商品', '選取商品', '點擊按鈕',
+  '加入收藏', '加入購物車', '查看購物車', '開始填表', '會員註冊', '填寫表單',
+  '聯絡詢問', '預約', '下載', '開始結帳', '開始付款', '完成購買',
+  '試用申請', '撥打電話', '分享內容',
 ]
 
 interface Props { plan: PlanData; update: (p: Partial<PlanData>) => void }
